@@ -1,19 +1,30 @@
 const http = require('http');
 const express = require('express');
-
+const jwt = require('jsonwebtoken')
+const bodyParser = require('body-parser')
 const app = express();
 
+const signature_secret = VONAGE_SIGNATURE_SECRET;
 let LastMessage = '';
 
-app.post('/sms', (req, res) => {
-  const twiml = new MessagingResponse();
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+app.set('port', (process.env.PORT || 3000));
 
-  twiml.message('The Robots are coming! Head for the hills!');
-
-  res.writeHead(200, {'Content-Type': 'text/xml'});
-  res.end(twiml.toString());
+app.get('/', (req, res) => {
+	try {
+        let auth = jwt.verify(req.headers['authorization'].split(' ')[1], signature_secret)
+        const params = Object.assign(request.query, request.body)
+		console.log(params)
+        LastMessage = params.text
+  		res.writeHead(200, {'Content-Type': 'text/xml'});
+        res.send('Verified')
+    } catch (error) {
+        res.sendStatus('401')
+    }    
 });
 app.get('/last-message', (res) => {
+	res.writeHead(200, {'Content-Type': 'text/xml'});
 	res.end(LastMessage)
 })
 
